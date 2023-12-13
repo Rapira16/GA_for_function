@@ -1,14 +1,44 @@
 #include <iostream>
-#include <iomanip>
 #include <vector>
 #include <cmath>
 #include <algorithm>
 #include <random>
 
+int ichek(std::string x = "") {
+    bool b, t = false;
+    if (x.length() == 0) {
+        t = true;
+    }
+    while (true) {
+        if (t) {
+            std::cin >> x;
+        }
+        b = true;
+        if ((x[0] == '-') || (x[0] >= '0' && x[0] <= '9')) {
+            for (int i = 1; i < x.length(); ++i) {
+                if (not((x[i] >= '0' && x[i] <= '9'))) {
+                    b = false;
+                    break;
+                }
+            }
+            try {
+                if (b) {
+                    return stoi(x);
+                }
+            }
+            catch (std::out_of_range const &e) {
+                std::cout << "\ntoo big for integer" << std::endl;
+            }
+        }
+        std::cout << "Wrong Value. Try again: " << std::endl;
+        std::cin.clear();
+        std::cin.ignore();
+    }
+}
+
 // Функция, для которой мы ищем экстремум
 double function(double x, double y) {
-    return (1.3*1.3*1.3/(pow((x-2), 2)+1.3*1.3)) + (1.3*1.3*1.3*1.3/(pow((y+1), 2)+1.3*1.3)) +
-    (1.3*1.3*1.3*1.3/(pow((x+2), 2)+1.3*1.3)) + (1.3*1.3*1.3*1.3/(pow((y+1), 2)+1.3*1.3));
+    return pow(x, 2) + pow(y, 2);
 }
 
 // Класс для представления особей в генетическом алгоритме
@@ -39,8 +69,12 @@ double calculateFitness(Individual& individual) {
 }
 
 // Функция для сортировки особей по убыванию приспособленности
-bool compareFitness(const Individual& a, const Individual& b) {
+bool compareFitness_1(const Individual& a, const Individual& b) {
     return a.fitness > b.fitness;
+}
+// Функция для сортировки особей по возрастпнию приспособленности
+bool compareFitness_2(const Individual& a, const Individual& b) {
+    return a.fitness < b.fitness;
 }
 
 // Функция для создания новой популяции особей
@@ -89,8 +123,18 @@ void printResult(const Individual& bestIndividual, int iteration) {
 }
 
 int main() {
-    int populationSize = 100;  // Размер начальной популяции
-    int numIterations = 1000;  // Количество итераций генетического алгоритма
+    std::cout << "Enter population size: " << std::endl;
+    int populationSize = ichek();  // Размер начальной популяции
+    std::cout << "Enter amount of iterations (ends with 00)" << std::endl;
+    int numIterations = ichek();  // Количество итераций генетического алгоритма
+    std::string extreme;
+    while (true) {
+        std::cout << "min or max of extreame: " << std::endl;
+        std::cin >> extreme;
+        if (extreme == "min" || extreme == "max") break;
+        std::cout << "try again" << std::endl;
+    }
+
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -109,8 +153,12 @@ int main() {
             individual.fitness = calculateFitness(individual);
         }
 
-        // Сортируем популяцию по убыванию приспособленности
-        std::sort(population.begin(), population.end(), compareFitness);
+        // Сортируем популяцию по приспособленности в зависимости от выбора экстремума
+        if (extreme == "min"){
+            std::sort(population.begin(), population.end(), compareFitness_2);
+        } else {
+            std::sort(population.begin(), population.end(), compareFitness_1);
+        }
 
         // Выводим текущий лучший результат
         if (i % 100 == 0) {  // Выводим результат каждые 100 итераций
